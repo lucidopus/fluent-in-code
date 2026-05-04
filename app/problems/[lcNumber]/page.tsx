@@ -113,7 +113,7 @@ export default async function ProblemPage({
       {attempts.length > 0 ? (
         <Section title="Attempts" icon={<Sparkles className="h-4 w-4" />}>
           <p className="mb-4 text-sm text-muted-foreground">
-            Click any card to open the full record — restate, brute force, optimal, code, transcript.
+            Latest is open below. Click older cards to open the full record.
           </p>
           <div className="space-y-3">
             {attempts.map((a, i) => (
@@ -136,6 +136,7 @@ export default async function ProblemPage({
                 }}
                 index={i}
                 total={attempts.length}
+                expanded={i === 0}
               />
             ))}
           </div>

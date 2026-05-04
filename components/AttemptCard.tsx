@@ -17,7 +17,8 @@ import { deleteAttempt } from "@/app/problems/[lcNumber]/actions";
 import { HURDLE_LABELS, type ImplementationHurdle } from "@/lib/schemas/attempt";
 import { formatRelativeTime } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-import { Clock, Pencil, Sparkles, Trash2, Zap } from "lucide-react";
+import { toast } from "sonner";
+import { Clock, Maximize2, Pencil, Sparkles, Trash2, Zap } from "lucide-react";
 
 type Attempt = {
   _id: string;
@@ -60,19 +61,23 @@ export function AttemptCard({
   index,
   total,
   lcNumber,
+  expanded = false,
 }: {
   attempt: Attempt;
   index: number;
   total: number;
   lcNumber: number;
+  expanded?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [pendingDelete, startDelete] = useTransition();
   const router = useRouter();
   const isLatest = index === 0;
   const ordinal = total - index;
   const isDeep = attempt.mode === "deep";
+  const showInline = expanded && isDeep;
 
   const editDefaults: EditDefaults = {
     attemptId: attempt._id,
@@ -99,21 +104,103 @@ export function AttemptCard({
   };
 
   function handleDelete() {
-    if (!confirm(`Delete this attempt (${formatRelativeTime(attempt.attemptedAt)}, score ${attempt.selfScore}/10)? This cannot be undone.`)) {
-      return;
-    }
     const fd = new FormData();
     fd.set("attemptId", attempt._id);
     fd.set("lcNumber", String(lcNumber));
     startDelete(async () => {
       const res = await deleteAttempt(fd);
       if (!res.ok) {
-        alert(res.error ?? "Failed to delete");
+        toast.error(res.error ?? "Delete failed — try again.");
         return;
       }
+      setConfirmingDelete(false);
       setOpen(false);
       router.refresh();
     });
+  }
+
+  const meta = (
+    <>
+      <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+        {isLatest ? "latest" : `attempt #${ordinal}`}
+      </span>
+      <ModeBadge mode={attempt.mode} />
+      {attempt.implementationHurdle && attempt.implementationHurdle !== "None" ? (
+        <span className="rounded-md border border-warning/30 bg-warning/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-warning">
+          {HURDLE_LABELS[attempt.implementationHurdle]}
+        </span>
+      ) : null}
+    </>
+  );
+
+  if (showInline) {
+    return (
+      <>
+        <Card className={cn("border-primary/50", isLatest && "shadow-sm")}>
+          <CardContent className="space-y-5 p-5 md:p-6">
+            <div className="flex items-start gap-4">
+              <div className={cn("font-serif-italic text-4xl font-light leading-none", scoreTone(attempt.selfScore))}>
+                {attempt.selfScore}
+                <span className="text-base text-muted-foreground">/10</span>
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">{meta}</div>
+                <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                  <span>{formatRelativeTime(attempt.attemptedAt)}</span>
+                  {attempt.durationMinutes != null ? (
+                    <span className="inline-flex items-center gap-1 font-mono text-xs">
+                      <Clock className="h-3 w-3" /> {attempt.durationMinutes}m
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+              <div className="flex shrink-0 items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setOpen(true)}
+                  aria-label="Open full record"
+                >
+                  <Maximize2 className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+
+            {attempt.optimal && attempt.optimal.insight && attempt.optimal.insight.trim().length > 0 ? (
+              <p className="border-l-2 border-primary/50 pl-3 font-serif-italic text-base italic text-foreground/90">
+                {attempt.optimal.insight}
+              </p>
+            ) : null}
+
+            <div className="grid gap-5 md:grid-cols-2">
+              {attempt.restate ? (
+                <InlineSection title="Restate">
+                  <p className="whitespace-pre-wrap text-sm leading-relaxed">{attempt.restate}</p>
+                </InlineSection>
+              ) : null}
+
+              {attempt.optimal ? (
+                <InlineSection title="Optimal">
+                  <p className="whitespace-pre-wrap text-sm leading-relaxed">{attempt.optimal.approach}</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <ComplexityChip label="time" value={attempt.optimal.time} />
+                    <ComplexityChip label="space" value={attempt.optimal.space} />
+                  </div>
+                </InlineSection>
+              ) : null}
+            </div>
+
+            {attempt.code ? (
+              <InlineSection title="Code">
+                <CodeBlock code={attempt.code} language={attempt.language ?? "python"} height="320px" />
+              </InlineSection>
+            ) : null}
+          </CardContent>
+        </Card>
+
+        {renderDialog()}
+      </>
+    );
   }
 
   return (
@@ -140,17 +227,7 @@ export function AttemptCard({
           </div>
 
           <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                {isLatest ? "latest" : `attempt #${ordinal}`}
-              </span>
-              <ModeBadge mode={attempt.mode} />
-              {attempt.implementationHurdle && attempt.implementationHurdle !== "None" ? (
-                <span className="rounded-md border border-warning/30 bg-warning/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-warning">
-                  {HURDLE_LABELS[attempt.implementationHurdle]}
-                </span>
-              ) : null}
-            </div>
+            <div className="flex flex-wrap items-center gap-2">{meta}</div>
             <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
               <span>{formatRelativeTime(attempt.attemptedAt)}</span>
               {attempt.durationMinutes != null ? (
@@ -168,14 +245,23 @@ export function AttemptCard({
         </CardContent>
       </Card>
 
+      {renderDialog()}
+    </>
+  );
+
+  function renderDialog() {
+    return (
       <Dialog
         open={open}
         onOpenChange={(v) => {
           setOpen(v);
-          if (!v) setEditing(false);
+          if (!v) {
+            setEditing(false);
+            setConfirmingDelete(false);
+          }
         }}
       >
-        <DialogContent className="max-h-[90vh] w-[95vw] max-w-5xl! overflow-y-auto sm:w-full">
+        <DialogContent className="max-h-[90dvh] w-[95vw] max-w-5xl! overflow-y-auto sm:w-full">
           <DialogHeader>
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -204,7 +290,7 @@ export function AttemptCard({
               </div>
               {!editing ? (
                 <div className="flex shrink-0 items-center gap-1 pr-8">
-                  {isDeep ? (
+                  {isDeep && !confirmingDelete ? (
                     <Button
                       variant="outline"
                       size="sm"
@@ -214,15 +300,37 @@ export function AttemptCard({
                       <Pencil className="mr-1 h-3 w-3" /> Edit
                     </Button>
                   ) : null}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleDelete}
-                    disabled={pendingDelete}
-                    className="text-muted-foreground hover:text-destructive"
-                  >
-                    <Trash2 className="mr-1 h-3 w-3" /> {pendingDelete ? "Deleting…" : "Delete"}
-                  </Button>
+                  {confirmingDelete ? (
+                    <>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={handleDelete}
+                        disabled={pendingDelete}
+                      >
+                        <Trash2 className="mr-1 h-3 w-3" />
+                        {pendingDelete ? "Deleting…" : "Confirm delete"}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setConfirmingDelete(false)}
+                        disabled={pendingDelete}
+                      >
+                        Cancel
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setConfirmingDelete(true)}
+                      disabled={pendingDelete}
+                      className="text-muted-foreground hover:text-destructive"
+                    >
+                      <Trash2 className="mr-1 h-3 w-3" /> Delete
+                    </Button>
+                  )}
                 </div>
               ) : null}
             </div>
@@ -298,8 +406,8 @@ export function AttemptCard({
           )}
         </DialogContent>
       </Dialog>
-    </>
-  );
+    );
+  }
 }
 
 function ModeBadge({ mode }: { mode: "quick" | "deep" }) {
@@ -337,6 +445,25 @@ function DialogSection({
   );
 }
 
+function InlineSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="space-y-2">
+      <h4 className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+        {title}
+      </h4>
+      <div>{children}</div>
+    </section>
+  );
+}
+
+function ComplexityChip({ label, value }: { label: string; value: string }) {
+  return (
+    <span className="rounded-md border bg-muted/30 px-2 py-0.5 font-mono text-xs">
+      {label} <span className="text-foreground">{value}</span>
+    </span>
+  );
+}
+
 function ComplexityBlock({
   approach,
   time,
@@ -352,12 +479,8 @@ function ComplexityBlock({
     <div className="space-y-2">
       <p className="whitespace-pre-wrap text-sm leading-relaxed">{approach}</p>
       <div className="flex flex-wrap gap-2">
-        <span className="rounded-md border bg-muted/30 px-2 py-0.5 font-mono text-xs">
-          time <span className="text-foreground">{time}</span>
-        </span>
-        <span className="rounded-md border bg-muted/30 px-2 py-0.5 font-mono text-xs">
-          space <span className="text-foreground">{space}</span>
-        </span>
+        <ComplexityChip label="time" value={time} />
+        <ComplexityChip label="space" value={space} />
       </div>
       {insight && insight.trim().length > 0 ? (
         <p className="border-l-2 border-primary/40 pl-3 text-xs italic text-muted-foreground">

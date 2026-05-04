@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { saveDeepLog } from "@/app/problems/[lcNumber]/actions";
@@ -10,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
+import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -45,6 +47,7 @@ export function AttemptForm({ lcNumber, lcTitle }: { lcNumber: number; lcTitle: 
   const [state, action, pending] = useActionState(saveDeepLog, initial);
   const [bruteApplicable, setBruteApplicable] = useState(true);
   const [score, setScore] = useState(7);
+  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     if (state.ok && !pending) {
@@ -52,8 +55,21 @@ export function AttemptForm({ lcNumber, lcTitle }: { lcNumber: number; lcTitle: 
     }
   }, [state.ok, pending, lcNumber, router]);
 
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault();
+        formRef.current?.requestSubmit();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const band = scoreBand(score);
+
   return (
-    <form action={action} className="space-y-8">
+    <form ref={formRef} action={action} className="space-y-8 pb-24">
       <input type="hidden" name="lcNumber" value={lcNumber} />
 
       <Section
@@ -148,15 +164,22 @@ export function AttemptForm({ lcNumber, lcTitle }: { lcNumber: number; lcTitle: 
         <div className="space-y-1.5">
           <Label className="text-xs uppercase tracking-wider">how it went (1-10)</Label>
           <div className="flex items-center gap-4">
-            <Slider
-              min={1}
-              max={10}
-              step={1}
-              value={[score]}
-              onValueChange={(v) => setScore(v[0] ?? 7)}
-              className="flex-1"
-            />
-            <div className="font-serif-italic text-3xl font-light">{score}</div>
+            <div className="relative flex-1">
+              <Slider
+                min={1}
+                max={10}
+                step={1}
+                value={[score]}
+                onValueChange={(v) => setScore(v[0] ?? 7)}
+              />
+              <ScoreTicks />
+            </div>
+            <div className="flex w-20 flex-col items-end leading-none">
+              <div className={cn("font-serif-italic text-3xl font-light", band.tone)}>{score}</div>
+              <div className={cn("font-mono text-[10px] uppercase tracking-wider", band.tone)}>
+                {band.label}
+              </div>
+            </div>
           </div>
         </div>
         <input type="hidden" name="selfScore" value={score} />
@@ -219,18 +242,51 @@ export function AttemptForm({ lcNumber, lcTitle }: { lcNumber: number; lcTitle: 
         </div>
       </Section>
 
-      {state.error ? (
-        <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-          {state.error}
-        </p>
-      ) : null}
-
-      <div className="flex items-center gap-3 border-t pt-6">
-        <Button type="submit" size="lg" disabled={pending}>
+      <div className="sticky bottom-0 -mx-4 mt-8 flex items-center gap-3 border-t bg-background/95 px-4 py-3 backdrop-blur supports-backdrop-filter:bg-background/80">
+        <Button type="submit" size="lg" disabled={pending} className="h-11">
           {pending ? "Saving…" : `Log attempt — ${lcTitle}`}
         </Button>
+        <Button type="button" variant="ghost" asChild>
+          <Link href={`/problems/${lcNumber}`}>Cancel</Link>
+        </Button>
+        <span className="ml-auto hidden font-mono text-[10px] uppercase tracking-wider text-muted-foreground md:inline">
+          <kbd className="rounded border bg-muted/50 px-1 py-0.5">⌘</kbd>
+          <kbd className="ml-1 rounded border bg-muted/50 px-1 py-0.5">↵</kbd>
+          <span className="ml-2">to save</span>
+        </span>
+        {state.error ? (
+          <span className="ml-auto truncate text-xs text-destructive md:ml-4">
+            {state.error}
+          </span>
+        ) : null}
       </div>
     </form>
+  );
+}
+
+type ScoreBand = { label: string; tone: string };
+export function scoreBand(score: number): ScoreBand {
+  if (score <= 3) return { label: "Again", tone: "text-destructive" };
+  if (score <= 6) return { label: "Hard", tone: "text-progress" };
+  if (score <= 8) return { label: "Good", tone: "text-primary" };
+  return { label: "Easy", tone: "text-done" };
+}
+
+function ScoreTicks() {
+  // Slider range is 1..10. Tick boundaries between bands sit at 3.5, 6.5, 8.5.
+  // Convert to percent across the [1,10] range: (val-1)/9 * 100.
+  const at = (v: number) => `${((v - 1) / 9) * 100}%`;
+  return (
+    <div className="pointer-events-none absolute inset-x-0 -bottom-1.5 h-1.5">
+      {[3.5, 6.5, 8.5].map((v) => (
+        <span
+          key={v}
+          aria-hidden
+          className="absolute top-0 h-1.5 w-px bg-muted-foreground/40"
+          style={{ left: at(v) }}
+        />
+      ))}
+    </div>
   );
 }
 

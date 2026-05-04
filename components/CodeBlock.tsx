@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useTheme } from "next-themes";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const Monaco = dynamic(() => import("@monaco-editor/react"), {
@@ -17,6 +18,7 @@ export function CodeBlock({
   language?: string;
   height?: string;
 }) {
+  const { resolvedTheme } = useTheme();
   if (!code) {
     return (
       <div className="rounded-md border bg-muted/30 p-6 text-sm text-muted-foreground">
@@ -30,7 +32,7 @@ export function CodeBlock({
         height={height}
         defaultLanguage={language}
         defaultValue={code}
-        theme="vs-dark"
+        theme={resolvedTheme === "dark" ? "vs-dark" : "vs"}
         options={{
           readOnly: true,
           minimap: { enabled: false },

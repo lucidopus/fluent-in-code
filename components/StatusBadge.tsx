@@ -4,7 +4,7 @@ import { STATUS_LABELS, type ProblemStatus } from "@/lib/schemas/problem";
 const STATUS_STYLES: Record<ProblemStatus, string> = {
   NotStarted: "bg-muted text-muted-foreground border-border",
   Solved: "bg-progress/15 text-progress border-progress/30",
-  Reviewed: "bg-warning/15 text-warning border-warning/30",
+  Reviewed: "bg-primary/10 text-primary border-primary/30",
   Mastered: "bg-done/15 text-done border-done/40",
 };
 
@@ -25,8 +25,8 @@ export function StatusBadge({ status, className }: { status: ProblemStatus; clas
 
 export function DifficultyBadge({ difficulty }: { difficulty: "Easy" | "Medium" | "Hard" }) {
   const styles = {
-    Easy: "text-done border-done/30",
-    Medium: "text-progress border-progress/30",
+    Easy: "text-muted-foreground border-border",
+    Medium: "text-primary border-primary/30",
     Hard: "text-destructive border-destructive/30",
   } as const;
   return (

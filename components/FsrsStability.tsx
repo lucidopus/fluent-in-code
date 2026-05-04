@@ -1,6 +1,20 @@
 import { formatStability, type FsrsState } from "@/lib/fsrs";
 import { cn } from "@/lib/utils";
 
+type Bucket = {
+  label: string;
+  filled: number;
+  tone: string;
+};
+
+function confidenceBucket(stabilityDays: number): Bucket {
+  if (stabilityDays < 7) return { label: "fragile", filled: 1, tone: "text-destructive" };
+  if (stabilityDays < 30) return { label: "warming", filled: 2, tone: "text-progress" };
+  if (stabilityDays < 90) return { label: "stable", filled: 3, tone: "text-primary" };
+  if (stabilityDays < 365) return { label: "confident", filled: 4, tone: "text-done" };
+  return { label: "locked in", filled: 5, tone: "text-done" };
+}
+
 export function FsrsStability({
   fsrs,
   className,
@@ -10,24 +24,63 @@ export function FsrsStability({
 }) {
   if (!fsrs.lastReviewAt || fsrs.reps === 0) {
     return (
-      <div className={cn("font-mono text-[10px] uppercase tracking-wider text-muted-foreground", className)}>
+      <div
+        className={cn(
+          "font-mono text-[10px] uppercase tracking-wider text-muted-foreground",
+          className,
+        )}
+        title="No attempts logged. Save a Quick or Deep log to start the FSRS schedule."
+      >
         no attempts yet
       </div>
     );
   }
-  const dueIn = fsrs.dueAt ? Math.ceil((new Date(fsrs.dueAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) : 0;
+
+  const dueIn = fsrs.dueAt
+    ? Math.ceil((new Date(fsrs.dueAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : 0;
+  const bucket = confidenceBucket(fsrs.stability);
+  const tooltip = `stability ${formatStability(fsrs.stability)} · reps ${fsrs.reps} · lapses ${fsrs.lapses}`;
+
+  const dueLabel =
+    dueIn < 0
+      ? `${Math.abs(dueIn)}d overdue`
+      : dueIn === 0
+        ? "due today"
+        : dueIn === 1
+          ? "due tomorrow"
+          : `next in ${dueIn}d`;
+
   return (
-    <div className={cn("flex flex-col gap-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground", className)}>
-      <span>
-        stability <span className="text-foreground">{formatStability(fsrs.stability)}</span>
-      </span>
-      <span>
-        reps <span className="text-foreground">{fsrs.reps}</span> · lapses{" "}
-        <span className="text-foreground">{fsrs.lapses}</span>
-      </span>
-      <span>
-        {dueIn < 0 ? <span className="text-destructive">{Math.abs(dueIn)}d overdue</span> : dueIn === 0 ? "due today" : `due in ${dueIn}d`}
-      </span>
+    <div
+      title={tooltip}
+      className={cn("flex items-center gap-2", className)}
+    >
+      <div className="flex items-center gap-1" aria-label={`confidence ${bucket.label}`}>
+        {[0, 1, 2, 3, 4].map((i) => (
+          <span
+            key={i}
+            className={cn(
+              "h-1.5 w-1.5 rounded-full",
+              i < bucket.filled ? bucket.tone : "text-muted-foreground/30",
+              i < bucket.filled ? "bg-current" : "bg-current",
+            )}
+          />
+        ))}
+      </div>
+      <div className="flex flex-col leading-tight">
+        <span className={cn("font-mono text-[10px] uppercase tracking-wider", bucket.tone)}>
+          {bucket.label}
+        </span>
+        <span
+          className={cn(
+            "font-mono text-[10px] uppercase tracking-wider",
+            dueIn < 0 ? "text-destructive" : "text-muted-foreground",
+          )}
+        >
+          {dueLabel}
+        </span>
+      </div>
     </div>
   );
 }

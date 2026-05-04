@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useState } from "react";
+import { useTheme } from "next-themes";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const Monaco = dynamic(() => import("@monaco-editor/react"), {
@@ -21,6 +22,7 @@ export function CodeEditor({
   height?: string;
 }) {
   const [value, setValue] = useState(defaultValue);
+  const { resolvedTheme } = useTheme();
   return (
     <div className="overflow-hidden rounded-md border">
       <input type="hidden" name={name} value={value} />
@@ -29,7 +31,7 @@ export function CodeEditor({
         language={language}
         value={value}
         onChange={(v) => setValue(v ?? "")}
-        theme="vs-dark"
+        theme={resolvedTheme === "dark" ? "vs-dark" : "vs"}
         options={{
           minimap: { enabled: false },
           fontSize: 13,
@@ -38,7 +40,6 @@ export function CodeEditor({
           padding: { top: 12, bottom: 12 },
           tabSize: 4,
           insertSpaces: true,
-          formatOnPaste: true,
         }}
       />
     </div>

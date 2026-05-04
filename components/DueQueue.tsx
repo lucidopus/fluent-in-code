@@ -1,8 +1,5 @@
-import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
-import { DifficultyBadge } from "@/components/StatusBadge";
-import { formatDueDate } from "@/lib/utils";
-import { ArrowUpRight } from "lucide-react";
+import { DueQueueRow, type DueRowItem } from "@/components/DueQueueRow";
 import type { ProblemDoc } from "@/lib/schemas/problem";
 
 export function DueQueue({ items }: { items: ProblemDoc[] }) {
@@ -18,27 +15,18 @@ export function DueQueue({ items }: { items: ProblemDoc[] }) {
       </Card>
     );
   }
+  const rows: DueRowItem[] = items.map((p) => ({
+    lcNumber: p.lcNumber,
+    title: p.title,
+    difficulty: p.difficulty,
+    dueAt: p.fsrs.dueAt instanceof Date ? p.fsrs.dueAt.toISOString() : String(p.fsrs.dueAt),
+    reps: p.fsrs.reps,
+  }));
   return (
     <Card>
       <CardContent className="divide-y p-0">
-        {items.map((p) => (
-          <Link
-            key={p.lcNumber}
-            href={`/problems/${p.lcNumber}`}
-            className="group flex items-center gap-3 px-5 py-3 transition-colors hover:bg-muted/40"
-          >
-            <span className="w-12 font-mono text-xs text-muted-foreground">
-              #{p.lcNumber}
-            </span>
-            <div className="flex-1 min-w-0">
-              <div className="truncate font-medium">{p.title}</div>
-              <div className="text-xs text-muted-foreground">
-                {formatDueDate(p.fsrs.dueAt)} · reps {p.fsrs.reps}
-              </div>
-            </div>
-            <DifficultyBadge difficulty={p.difficulty} />
-            <ArrowUpRight className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-foreground" />
-          </Link>
+        {rows.map((p) => (
+          <DueQueueRow key={p.lcNumber} item={p} />
         ))}
       </CardContent>
     </Card>

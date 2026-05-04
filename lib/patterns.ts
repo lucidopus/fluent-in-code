@@ -1,3 +1,25 @@
+import type { LucideIcon } from "lucide-react";
+import {
+  Hash,
+  ArrowLeftRight,
+  Move,
+  Layers,
+  Search,
+  Link2,
+  TreePine,
+  Type,
+  TrendingUp,
+  GitBranch,
+  Network,
+  GitMerge,
+  LineChart,
+  Grid3x3,
+  Zap,
+  CalendarRange,
+  Sigma,
+  Binary,
+} from "lucide-react";
+
 export const Pattern = {
   ArraysHashing: "ArraysHashing",
   TwoPointers: "TwoPointers",
@@ -48,6 +70,11 @@ export type PatternMeta = {
   slug: string;
   description: string;
   signal: string;
+  // Static color tokens (must be statically resolvable so Tailwind v4 can pick them up).
+  accent: string; // text + border color class
+  accentBar: string; // top bar background class
+  accentSoft: string; // soft tinted background class
+  icon: LucideIcon;
 };
 
 export const PATTERN_META: Record<Pattern, PatternMeta> = {
@@ -57,6 +84,10 @@ export const PATTERN_META: Record<Pattern, PatternMeta> = {
     slug: "arrays-hashing",
     description: "HashMap O(1) lookup, frequency counters, complement, key design.",
     signal: "Have I seen this before? — reach for a hash structure.",
+    accent: "text-sky-600 dark:text-sky-400",
+    accentBar: "bg-sky-500/70",
+    accentSoft: "bg-sky-500/10",
+    icon: Hash,
   },
   [Pattern.TwoPointers]: {
     pattern: Pattern.TwoPointers,
@@ -64,6 +95,10 @@ export const PATTERN_META: Record<Pattern, PatternMeta> = {
     slug: "two-pointers",
     description: "Opposite-end converging or fast-slow on the same array.",
     signal: "Sorted array + pair / triplet — two pointers from both ends.",
+    accent: "text-cyan-600 dark:text-cyan-400",
+    accentBar: "bg-cyan-500/70",
+    accentSoft: "bg-cyan-500/10",
+    icon: ArrowLeftRight,
   },
   [Pattern.SlidingWindow]: {
     pattern: Pattern.SlidingWindow,
@@ -71,6 +106,10 @@ export const PATTERN_META: Record<Pattern, PatternMeta> = {
     slug: "sliding-window",
     description: "Fixed or variable window, validity invariant, shrink-when-invalid.",
     signal: "Contiguous subarray / substring satisfying X — variable window.",
+    accent: "text-teal-600 dark:text-teal-400",
+    accentBar: "bg-teal-500/70",
+    accentSoft: "bg-teal-500/10",
+    icon: Move,
   },
   [Pattern.Stack]: {
     pattern: Pattern.Stack,
@@ -78,6 +117,10 @@ export const PATTERN_META: Record<Pattern, PatternMeta> = {
     slug: "stack",
     description: "LIFO, monotonic stack for next-greater / next-smaller, parens matching.",
     signal: "Match opens with closes / find next greater — stack stores indices.",
+    accent: "text-amber-600 dark:text-amber-400",
+    accentBar: "bg-amber-500/70",
+    accentSoft: "bg-amber-500/10",
+    icon: Layers,
   },
   [Pattern.BinarySearch]: {
     pattern: Pattern.BinarySearch,
@@ -85,6 +128,10 @@ export const PATTERN_META: Record<Pattern, PatternMeta> = {
     slug: "binary-search",
     description: "Sorted array, rotated, or monotonic answer space.",
     signal: "Sorted, OR feasibility is monotonic — search the answer.",
+    accent: "text-indigo-600 dark:text-indigo-400",
+    accentBar: "bg-indigo-500/70",
+    accentSoft: "bg-indigo-500/10",
+    icon: Search,
   },
   [Pattern.LinkedList]: {
     pattern: Pattern.LinkedList,
@@ -92,6 +139,10 @@ export const PATTERN_META: Record<Pattern, PatternMeta> = {
     slug: "linked-list",
     description: "Dummy head, prev/curr/next dance, fast & slow pointers.",
     signal: "List manipulation — dummy node eliminates edge cases.",
+    accent: "text-violet-600 dark:text-violet-400",
+    accentBar: "bg-violet-500/70",
+    accentSoft: "bg-violet-500/10",
+    icon: Link2,
   },
   [Pattern.Trees]: {
     pattern: Pattern.Trees,
@@ -99,6 +150,10 @@ export const PATTERN_META: Record<Pattern, PatternMeta> = {
     slug: "trees",
     description: "Recursive DFS (pre/in/post), iterative BFS level-by-level, BST bounds.",
     signal: "Recurse on children. What to return up, what to pass down.",
+    accent: "text-emerald-600 dark:text-emerald-400",
+    accentBar: "bg-emerald-500/70",
+    accentSoft: "bg-emerald-500/10",
+    icon: TreePine,
   },
   [Pattern.Tries]: {
     pattern: Pattern.Tries,
@@ -106,6 +161,10 @@ export const PATTERN_META: Record<Pattern, PatternMeta> = {
     slug: "tries",
     description: "Prefix tree for word search, autocomplete, longest-prefix.",
     signal: "Many words sharing prefixes — trie nodes per character.",
+    accent: "text-lime-600 dark:text-lime-400",
+    accentBar: "bg-lime-500/70",
+    accentSoft: "bg-lime-500/10",
+    icon: Type,
   },
   [Pattern.Heap]: {
     pattern: Pattern.Heap,
@@ -113,6 +172,10 @@ export const PATTERN_META: Record<Pattern, PatternMeta> = {
     slug: "heap",
     description: "Min/max-heap of size k, top-k, median maintenance.",
     signal: "Top K, kth smallest in stream, median — heap of size k.",
+    accent: "text-orange-600 dark:text-orange-400",
+    accentBar: "bg-orange-500/70",
+    accentSoft: "bg-orange-500/10",
+    icon: TrendingUp,
   },
   [Pattern.Backtracking]: {
     pattern: Pattern.Backtracking,
@@ -120,6 +183,10 @@ export const PATTERN_META: Record<Pattern, PatternMeta> = {
     slug: "backtracking",
     description: "Choose → recurse → un-choose. Subsets, permutations, combinations.",
     signal: "All combinations / permutations — backtracking template.",
+    accent: "text-rose-600 dark:text-rose-400",
+    accentBar: "bg-rose-500/70",
+    accentSoft: "bg-rose-500/10",
+    icon: GitBranch,
   },
   [Pattern.Graphs]: {
     pattern: Pattern.Graphs,
@@ -127,6 +194,10 @@ export const PATTERN_META: Record<Pattern, PatternMeta> = {
     slug: "graphs",
     description: "BFS/DFS with visited set, grid-as-graph, connected components.",
     signal: "Cells connected to neighbors — DFS or BFS with visited.",
+    accent: "text-purple-600 dark:text-purple-400",
+    accentBar: "bg-purple-500/70",
+    accentSoft: "bg-purple-500/10",
+    icon: Network,
   },
   [Pattern.AdvancedGraphs]: {
     pattern: Pattern.AdvancedGraphs,
@@ -134,6 +205,10 @@ export const PATTERN_META: Record<Pattern, PatternMeta> = {
     slug: "advanced-graphs",
     description: "Topological sort, Dijkstra, union-find, MST.",
     signal: "Weighted shortest path / cycle detection / dependencies.",
+    accent: "text-fuchsia-600 dark:text-fuchsia-400",
+    accentBar: "bg-fuchsia-500/70",
+    accentSoft: "bg-fuchsia-500/10",
+    icon: GitMerge,
   },
   [Pattern.OneDDP]: {
     pattern: Pattern.OneDDP,
@@ -141,6 +216,10 @@ export const PATTERN_META: Record<Pattern, PatternMeta> = {
     slug: "one-d-dp",
     description: "State as array, decision per index, often O(n) space → O(1).",
     signal: "Optimal substructure + overlapping subproblems on a sequence.",
+    accent: "text-pink-600 dark:text-pink-400",
+    accentBar: "bg-pink-500/70",
+    accentSoft: "bg-pink-500/10",
+    icon: LineChart,
   },
   [Pattern.TwoDDP]: {
     pattern: Pattern.TwoDDP,
@@ -148,6 +227,10 @@ export const PATTERN_META: Record<Pattern, PatternMeta> = {
     slug: "two-d-dp",
     description: "Grid DP, two-string DP (LCS, edit distance).",
     signal: "Two indices / dimensions in the state.",
+    accent: "text-red-600 dark:text-red-400",
+    accentBar: "bg-red-500/70",
+    accentSoft: "bg-red-500/10",
+    icon: Grid3x3,
   },
   [Pattern.Greedy]: {
     pattern: Pattern.Greedy,
@@ -155,6 +238,10 @@ export const PATTERN_META: Record<Pattern, PatternMeta> = {
     slug: "greedy",
     description: "Local choice is globally safe. Prove or pattern-match.",
     signal: "Pick the best each step, can prove no future regret.",
+    accent: "text-yellow-600 dark:text-yellow-400",
+    accentBar: "bg-yellow-500/70",
+    accentSoft: "bg-yellow-500/10",
+    icon: Zap,
   },
   [Pattern.Intervals]: {
     pattern: Pattern.Intervals,
@@ -162,6 +249,10 @@ export const PATTERN_META: Record<Pattern, PatternMeta> = {
     slug: "intervals",
     description: "Sort by start, sweep, merge / count overlaps.",
     signal: "Ranges that may overlap — sort then sweep.",
+    accent: "text-blue-600 dark:text-blue-400",
+    accentBar: "bg-blue-500/70",
+    accentSoft: "bg-blue-500/10",
+    icon: CalendarRange,
   },
   [Pattern.MathGeometry]: {
     pattern: Pattern.MathGeometry,
@@ -169,6 +260,10 @@ export const PATTERN_META: Record<Pattern, PatternMeta> = {
     slug: "math-geometry",
     description: "Matrix rotation, spiral order, modular arithmetic.",
     signal: "In-place matrix transform, layered iteration.",
+    accent: "text-stone-600 dark:text-stone-400",
+    accentBar: "bg-stone-500/70",
+    accentSoft: "bg-stone-500/10",
+    icon: Sigma,
   },
   [Pattern.BitManipulation]: {
     pattern: Pattern.BitManipulation,
@@ -176,6 +271,10 @@ export const PATTERN_META: Record<Pattern, PatternMeta> = {
     slug: "bit-manipulation",
     description: "AND / OR / XOR / shifts. Hamming weight, bit DP.",
     signal: "Subset enumeration, parity, count bits.",
+    accent: "text-slate-600 dark:text-slate-400",
+    accentBar: "bg-slate-500/70",
+    accentSoft: "bg-slate-500/10",
+    icon: Binary,
   },
 };
 
