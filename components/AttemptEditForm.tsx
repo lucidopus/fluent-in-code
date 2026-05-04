@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { updateAttempt } from "@/app/problems/[lcNumber]/actions";
@@ -18,6 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { scoreBand } from "@/components/AttemptForm";
+import { cn } from "@/lib/utils";
 import { HURDLE_LABELS, type ImplementationHurdle } from "@/lib/schemas/attempt";
 
 const CodeEditor = dynamic(
@@ -73,6 +75,8 @@ export function AttemptEditForm({
   const [state, action, pending] = useActionState(updateAttempt, initial);
   const [bruteApplicable, setBruteApplicable] = useState(defaults.bruteForce.applicable);
   const [score, setScore] = useState(defaults.selfScore);
+  const formRef = useRef<HTMLFormElement>(null);
+  const band = scoreBand(score);
 
   useEffect(() => {
     if (state.ok && !pending) {
@@ -81,8 +85,19 @@ export function AttemptEditForm({
     }
   }, [state.ok, pending, router, onSaved]);
 
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault();
+        formRef.current?.requestSubmit();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   return (
-    <form action={action} className="space-y-6">
+    <form ref={formRef} action={action} className="space-y-6">
       <input type="hidden" name="attemptId" value={defaults.attemptId} />
       <input type="hidden" name="lcNumber" value={lcNumber} />
 
@@ -177,14 +192,25 @@ export function AttemptEditForm({
         <CodeEditor name="code" defaultValue={defaults.code} language={defaults.language || "python"} />
       </Field>
 
-      <Field label={`How it went (${score}/10)`}>
-        <Slider
-          min={1}
-          max={10}
-          step={1}
-          value={[score]}
-          onValueChange={(v) => setScore(v[0] ?? defaults.selfScore)}
-        />
+      <Field label="How it went (1-10)">
+        <div className="flex items-center gap-4">
+          <Slider
+            min={1}
+            max={10}
+            step={1}
+            value={[score]}
+            onValueChange={(v) => setScore(v[0] ?? defaults.selfScore)}
+            className="flex-1"
+          />
+          <div className="flex w-20 flex-col items-end leading-none">
+            <span className={cn("font-serif-italic text-3xl font-light", band.tone)}>
+              {score}
+            </span>
+            <span className={cn("font-mono text-[10px] uppercase tracking-wider", band.tone)}>
+              {band.label}
+            </span>
+          </div>
+        </div>
         <input type="hidden" name="selfScore" value={score} />
       </Field>
 
@@ -236,6 +262,11 @@ export function AttemptEditForm({
         <Button type="button" variant="ghost" onClick={onCancel}>
           Cancel
         </Button>
+        <span className="ml-auto hidden font-mono text-[10px] uppercase tracking-wider text-muted-foreground md:inline">
+          <kbd className="rounded border bg-muted/50 px-1 py-0.5">⌘</kbd>
+          <kbd className="ml-1 rounded border bg-muted/50 px-1 py-0.5">↵</kbd>
+          <span className="ml-2">to save</span>
+        </span>
       </div>
     </form>
   );

@@ -61,9 +61,10 @@ export function FsrsStability({
           <span
             key={i}
             className={cn(
-              "h-1.5 w-1.5 rounded-full",
-              i < bucket.filled ? bucket.tone : "text-muted-foreground/30",
-              i < bucket.filled ? "bg-current" : "bg-current",
+              "h-2 w-2 rounded-full",
+              i < bucket.filled
+                ? cn(bucket.tone, "bg-current")
+                : "border border-muted-foreground/40",
             )}
           />
         ))}

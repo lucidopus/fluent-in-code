@@ -60,12 +60,19 @@ export function StatusToggle({
   );
 }
 
+// Mastered = "retire from queue." Showing this on a fragile/warming problem is
+// noise — the answer is "not yet." Only render when the user has earned the
+// option (≥30d stability) or when un-mastering an already-retired problem.
+const MASTER_STABILITY_THRESHOLD_DAYS = 30;
+
 export function MarkAsMasteredButton({
   lcNumber,
   current,
+  stability,
 }: {
   lcNumber: number;
   current: ProblemStatusT;
+  stability: number;
 }) {
   const [pending, start] = useTransition();
   if (current === "Mastered") {
@@ -85,6 +92,7 @@ export function MarkAsMasteredButton({
       </Button>
     );
   }
+  if (stability < MASTER_STABILITY_THRESHOLD_DAYS) return null;
   return (
     <Button
       size="sm"

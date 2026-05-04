@@ -16,8 +16,7 @@ export async function PatternGrid() {
         const Icon = meta.icon;
         return (
           <Link key={p} href={`/patterns/${meta.slug}`} className="group">
-            <Card className="h-full overflow-hidden transition-colors group-hover:border-primary/40">
-              <div className={cn("h-0.5 w-full", meta.accentBar)} aria-hidden />
+            <Card className="h-full transition-colors group-hover:border-primary/40">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3">

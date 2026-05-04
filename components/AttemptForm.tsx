@@ -164,16 +164,14 @@ export function AttemptForm({ lcNumber, lcTitle }: { lcNumber: number; lcTitle: 
         <div className="space-y-1.5">
           <Label className="text-xs uppercase tracking-wider">how it went (1-10)</Label>
           <div className="flex items-center gap-4">
-            <div className="relative flex-1">
-              <Slider
-                min={1}
-                max={10}
-                step={1}
-                value={[score]}
-                onValueChange={(v) => setScore(v[0] ?? 7)}
-              />
-              <ScoreTicks />
-            </div>
+            <Slider
+              min={1}
+              max={10}
+              step={1}
+              value={[score]}
+              onValueChange={(v) => setScore(v[0] ?? 7)}
+              className="flex-1"
+            />
             <div className="flex w-20 flex-col items-end leading-none">
               <div className={cn("font-serif-italic text-3xl font-light", band.tone)}>{score}</div>
               <div className={cn("font-mono text-[10px] uppercase tracking-wider", band.tone)}>
@@ -243,22 +241,25 @@ export function AttemptForm({ lcNumber, lcTitle }: { lcNumber: number; lcTitle: 
       </Section>
 
       <div className="sticky bottom-0 -mx-4 mt-8 flex items-center gap-3 border-t bg-background/95 px-4 py-3 backdrop-blur supports-backdrop-filter:bg-background/80">
-        <Button type="submit" size="lg" disabled={pending} className="h-11">
-          {pending ? "Saving…" : `Log attempt — ${lcTitle}`}
+        <Button type="submit" size="lg" disabled={pending} className="h-11 min-w-0 truncate">
+          {pending ? "Saving…" : (
+            <>
+              Save<span className="hidden md:inline"> — {lcTitle}</span>
+            </>
+          )}
         </Button>
         <Button type="button" variant="ghost" asChild>
           <Link href={`/problems/${lcNumber}`}>Cancel</Link>
         </Button>
-        <span className="ml-auto hidden font-mono text-[10px] uppercase tracking-wider text-muted-foreground md:inline">
-          <kbd className="rounded border bg-muted/50 px-1 py-0.5">⌘</kbd>
-          <kbd className="ml-1 rounded border bg-muted/50 px-1 py-0.5">↵</kbd>
-          <span className="ml-2">to save</span>
-        </span>
         {state.error ? (
-          <span className="ml-auto truncate text-xs text-destructive md:ml-4">
-            {state.error}
+          <span className="ml-auto truncate text-xs text-destructive">{state.error}</span>
+        ) : (
+          <span className="ml-auto hidden font-mono text-[10px] uppercase tracking-wider text-muted-foreground md:inline">
+            <kbd className="rounded border bg-muted/50 px-1 py-0.5">⌘</kbd>
+            <kbd className="ml-1 rounded border bg-muted/50 px-1 py-0.5">↵</kbd>
+            <span className="ml-2">to save</span>
           </span>
-        ) : null}
+        )}
       </div>
     </form>
   );
@@ -270,24 +271,6 @@ export function scoreBand(score: number): ScoreBand {
   if (score <= 6) return { label: "Hard", tone: "text-progress" };
   if (score <= 8) return { label: "Good", tone: "text-primary" };
   return { label: "Easy", tone: "text-done" };
-}
-
-function ScoreTicks() {
-  // Slider range is 1..10. Tick boundaries between bands sit at 3.5, 6.5, 8.5.
-  // Convert to percent across the [1,10] range: (val-1)/9 * 100.
-  const at = (v: number) => `${((v - 1) / 9) * 100}%`;
-  return (
-    <div className="pointer-events-none absolute inset-x-0 -bottom-1.5 h-1.5">
-      {[3.5, 6.5, 8.5].map((v) => (
-        <span
-          key={v}
-          aria-hidden
-          className="absolute top-0 h-1.5 w-px bg-muted-foreground/40"
-          style={{ left: at(v) }}
-        />
-      ))}
-    </div>
-  );
 }
 
 function Section({

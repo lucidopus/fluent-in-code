@@ -44,16 +44,13 @@ type Attempt = {
   transcript: string | null;
 };
 
-const SCORE_TONE: Record<string, string> = {
-  low: "text-destructive",
-  mid: "text-progress",
-  high: "text-done",
-};
-
+// Bands match `scoreBand` in AttemptForm — also the FSRS rating boundaries
+// (1-3 Again, 4-6 Hard, 7-8 Good, 9-10 Easy). Keep these in sync.
 function scoreTone(score: number): string {
-  if (score <= 4) return SCORE_TONE.low;
-  if (score <= 7) return SCORE_TONE.mid;
-  return SCORE_TONE.high;
+  if (score <= 3) return "text-destructive";
+  if (score <= 6) return "text-progress";
+  if (score <= 8) return "text-primary";
+  return "text-done";
 }
 
 export function AttemptCard({
@@ -192,7 +189,9 @@ export function AttemptCard({
 
             {attempt.code ? (
               <InlineSection title="Code">
-                <CodeBlock code={attempt.code} language={attempt.language ?? "python"} height="320px" />
+                <pre className="max-h-80 overflow-auto rounded-md border bg-muted/30 p-4 font-mono text-xs leading-relaxed">
+                  <code>{attempt.code}</code>
+                </pre>
               </InlineSection>
             ) : null}
           </CardContent>
@@ -413,7 +412,7 @@ export function AttemptCard({
 function ModeBadge({ mode }: { mode: "quick" | "deep" }) {
   if (mode === "deep") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-md border border-primary/30 bg-primary/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-primary">
+      <span className="inline-flex items-center gap-1 rounded-md border bg-muted/50 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-foreground">
         <Sparkles className="h-2.5 w-2.5" /> deep log
       </span>
     );

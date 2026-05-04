@@ -37,11 +37,14 @@ export function ProblemSearch() {
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        inputRef.current?.focus();
-        inputRef.current?.select();
-      }
+      if (!((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k")) return;
+      const t = e.target as HTMLElement | null;
+      // Don't yank focus away from prose-writing surfaces (Deep Log textareas).
+      if (t && (t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      if (t === inputRef.current) return;
+      e.preventDefault();
+      inputRef.current?.focus();
+      inputRef.current?.select();
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);

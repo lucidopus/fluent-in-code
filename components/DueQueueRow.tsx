@@ -104,7 +104,7 @@ export function DueQueueRow({ item }: { item: DueRowItem }) {
   }
 
   return (
-    <div className="group flex items-center gap-3 px-5 py-3 transition-colors hover:bg-muted/40">
+    <div className="group flex items-center gap-3 px-5 py-3 transition-colors hover:bg-muted/40 focus-within:bg-muted/40">
       <Link
         href={`/problems/${item.lcNumber}`}
         className="flex min-w-0 flex-1 items-center gap-3"
@@ -127,7 +127,7 @@ export function DueQueueRow({ item }: { item: DueRowItem }) {
           e.preventDefault();
           setLogging(true);
         }}
-        className="h-7 px-2 opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100"
+        className="h-7 px-2 opacity-60 transition-opacity group-hover:opacity-100 focus:opacity-100"
         aria-label="Quick log"
       >
         <Zap className="mr-1 h-3 w-3" /> log

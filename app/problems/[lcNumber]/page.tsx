@@ -97,7 +97,11 @@ export default async function ProblemPage({
           <div className="flex items-center gap-3">
             <FsrsStability fsrs={problem.fsrs} />
             <StatusToggle lcNumber={problem.lcNumber} current={problem.status} />
-            <MarkAsMasteredButton lcNumber={problem.lcNumber} current={problem.status} />
+            <MarkAsMasteredButton
+              lcNumber={problem.lcNumber}
+              current={problem.status}
+              stability={problem.fsrs.stability}
+            />
           </div>
         </CardContent>
       </Card>
