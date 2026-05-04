@@ -27,9 +27,17 @@ export async function verifyPassword(
     return { error: "Server misconfigured: APP_PASSWORD_HASH is not set." };
   }
   if (!hash.startsWith("$2")) {
-    // Common .env gotcha: dotenv-expand ate the $-prefixed segments.
-    // Escape with \$ in .env.local — see README.
-    return { error: "Server misconfigured: APP_PASSWORD_HASH appears mangled (escape $ as \\$ in .env.local)." };
+    // Two known shapes of mangling:
+    //  - .env.local without escaping: dotenv-expand ate the $-prefixed segments
+    //    → hash starts with `2` (no $) or random text. Fix: escape every $ as \$.
+    //  - Vercel dashboard with escaping copied from .env.local: literal \ stored
+    //    → hash starts with `\`. Fix: paste the RAW bcrypt hash (no backslashes).
+    const onVercel = !!process.env.VERCEL;
+    const looksEscaped = hash.startsWith("\\");
+    const tip = onVercel || looksEscaped
+      ? "On Vercel: paste the raw bcrypt hash (e.g. $2b$12$…) into the dashboard — do not use \\$ escaping (that's only for .env.local)."
+      : "In .env.local: escape every $ as \\$ — see README.";
+    return { error: `Server misconfigured: APP_PASSWORD_HASH appears mangled. ${tip}` };
   }
 
   const ok = await bcrypt.compare(password, hash);
